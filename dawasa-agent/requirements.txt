@@ -1,0 +1,4 @@
+google-adk==1.8.0
+google-cloud-aiplatform[adk,agent_engines]
+google-cloud-discoveryengine
+gradio
