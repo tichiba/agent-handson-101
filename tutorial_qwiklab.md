@@ -30,6 +30,8 @@ teachme tutorial_qwiklab.md
 次に、ターミナルの環境変数にプロジェクトIDを設定します。
 ```bash
 export PROJECT_ID=$(gcloud config list --format 'value(core.project)')
+export PROJECT_NUMBER=$(gcloud projects describe $(gcloud config get-value project) --format="value(projectNumber)")
+
 ```
 <walkthrough-info-message>**Tips:** コードボックスの横にあるボタンをクリックすることで、クリップボードへのコピーおよび Cloud Shell へのコピーが簡単に行えます。
 
@@ -42,6 +44,7 @@ export PROJECT_ID=$(gcloud config list --format 'value(core.project)')
 最後に、このハンズオンで利用する Google ADK をインストールします。
 ```bash
 pip install google-adk
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ## **[シナリオ1] Agentspace の初期設定**
@@ -68,14 +71,14 @@ pip install google-adk
 
 ## Google Cloud Storage データストアの作成
 
-4.  Cloud Shell で以下のコマンドを実行し、プロジェクトIDと同じ名前のGCSバケットを作成します。
+1.  Cloud Shell で以下のコマンドを実行し、プロジェクトIDと同じ名前のGCSバケットを作成します。
 ```bash
-gcloud storage buckets create gs://$PROJECT_ID
+gcloud storage buckets create gs://agentspace-$PROJECT_ID
 ```
 
 2.  Cloud Shellで以下のコマンドを実行し、サンプルファイルをシナリオ1で作成したGCSバケットにアップロードします。
 ```bash
-gcloud storage cp files/product_spec_model_x.txt gs://$PROJECT_ID/
+gcloud storage cp files/product_spec_model_x.txt gs://agentspace-$PROJECT_ID/
 ```
 
 ## Agentspace アプリのデプロイ
@@ -92,13 +95,13 @@ gcloud storage cp files/product_spec_model_x.txt gs://$PROJECT_ID/
 
 6. 「**+ 新しいデータストア**」を選択します。
 
-3.  「**Cloud Storage**」カードを見つけて「**SELECT**」をクリックします。
+7.  「**Cloud Storage**」カードを見つけて「**SELECT**」をクリックします。
 
-5.  **バケット名またはフォルダパス** に、先ほど作成したバケット名 `<walkthrough-project-id/>` を入力し、「**続行**」をクリックします。
+8.  **バケット名またはフォルダパス** に、先ほど作成したバケット名 `agentspace-<walkthrough-project-id/>` を入力し、「**続行**」をクリックします。
 
-6.  データストアに `GCS Data Store` という名前を付けます。
+9.  データストアに `GCS Data Store` という名前を付けます。
 
-7.  「**作成**」を選択します。作成したデータストアが一覧に表示されます。
+10.  「**作成**」を選択します。作成したデータストアが一覧に表示されます。
 
 これでエージェントを開発する準備が整いました。
 
@@ -113,33 +116,31 @@ gcloud storage cp files/product_spec_model_x.txt gs://$PROJECT_ID/
 
 1. まず、Cloud Shell エディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> を開きます。
 
-1.  サンプルエージェントのディレクトリ `dawasa-agent` に移動して、`agent.py` ファイルを開きます。
+2.  サンプルエージェントのディレクトリ `dawasa-agent` に移動して、`agent.py` ファイルを開きます。
 
-2.  このファイルには、エージェントの名前、説明、およびエージェントに与えられたインストラクションが記載されています。
+3.  このファイルには、エージェントの名前、説明、およびエージェントに与えられたインストラクションが記載されています。
 
-3. 次に、`env.example` ファイルを開きます。このファイルには、エージェントが使用する API キーなどの設定を記述します。
+4. 次に、`env.example` ファイルを開きます。このファイルには、エージェントが使用する API キーなどの設定を記述します。
 
-4. `GOOGLE_CLOUD_PROJECT` に Google Cloud プロジェクト ID `<walkthrough-project-id/>` を設定してください。
+5. `GOOGLE_CLOUD_PROJECT` に Google Cloud プロジェクト ID `<walkthrough-project-id/>` を設定してください。
 
-5. `env.example` ファイルを `.env` という名前に変更します。
+6. `env.example` ファイルを `.env` という名前に変更します。
 
 ## エージェントの実行と対話
 
 1. 「**ターミナルを開く**」を選択して、Cloud Shell を開きます。
 
-1.  `adk web` コマンドを実行して、エージェントをローカルで起動します。
+2.  `adk web` コマンドを実行して、エージェントをローカルで起動します。
 ```bash
 adk web
 ```
 このコマンドは、エージェントと対話するためのWebサーバーを起動します。
 
-2.  コマンドの出力に表示されるURLを開くには、Webプレビュー<walkthrough-web-preview-icon></walkthrough-web-preview-icon> をクリックします。
+3.  コマンドの出力に表示されるURL (通常は http://127.0.0.1:8000) をクリックします。
 
-3. 「**ポートを変更**」を選択し、コマンドの出力に表示されたURLのポート番号を入力してください。
+4.  Web UIが開いたら、利用可能なエージェントの一覧から `dawasa-agent` を選択します。
 
-3.  Web UIが開いたら、利用可能なエージェントの一覧から `dawasa-agent` を選択します。
-
-4.  テキストボックスに「日本の首都は？」と入力して、Enterキーを押してみましょう。エージェントから「東京だわさ。」のような応答が返ってくることを確認してください。
+5.  テキストボックスに「日本の首都は？」と入力して、Enterキーを押してみましょう。エージェントから「東京だわさ。」のような応答が返ってくることを確認してください。
 
 ## プロンプトのカスタマイズ
 
@@ -169,37 +170,36 @@ adk web
 
 1.  Cloud Shellで、前のシナリオで使用したWebサーバーを `Ctrl+C` で停止します。
 
-1.  ナビゲーションメニュー <walkthrough-nav-menu-icon></walkthrough-nav-menu-icon> から **[AI Applications]** > **[データストア]** に移動します。
+2.  ナビゲーションメニュー <walkthrough-nav-menu-icon></walkthrough-nav-menu-icon> から **[AI Applications]** > **[データストア]** に移動します。
 
-2.  シナリオ1で作成した `GCS Data Store` データストアをクリックします。
+3.  シナリオ1で作成した `GCS Data Store` データストアをクリックします。
 
-3.  データストアの詳細ページで、**データストアの ID** をコピーします。
+4.  データストアの詳細ページで、**データストアの ID** をコピーします。
 
-1. Cloud Shell エディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> を開きます。
+5. Cloud Shell エディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> を開きます。
 
-1.  ディレクトリ `rag-agent` に移動して、`agent.py` ファイルを開きます。
-このファイルには、先程のエージェントと同じくインストラクションが記載されているのに加えて、RAGデータソースを指定するようになっています。
+6.  ディレクトリ `rag-agent` に移動して、`agent.py` ファイルを開きます。
+このファイルに記述されているRAGデータソースの設定を、次のとおり書き換えます。
 
-2.  `your-datastore-id` の値を、先ほどコピーしたご自身のデータストアIDに書き換えます。
+* `your-datastore-id` -> 先ほどコピーしたデータストアID
+* `your-gcp-project-id` -> プロジェクト ID `<walkthrough-project-id/>`
 
-5. 次に、`your-gcp-project-id` の値を、ご自身の Google Cloud プロジェクト ID `<walkthrough-project-id/>` に書き換えます。
+7. 次に、`env.example` ファイルを開きます。このファイルには、エージェントが使用する API キーなどの設定を記述します。
 
-3. 次に、`env.example` ファイルを開きます。このファイルには、エージェントが使用する API キーなどの設定を記述します。
+8. `GOOGLE_CLOUD_PROJECT` に Google Cloud プロジェクト ID `<walkthrough-project-id/>` を設定してください。
 
-4. `GOOGLE_CLOUD_PROJECT` に Google Cloud プロジェクト ID `<walkthrough-project-id/>` を設定してください。
-
-5. `env.example` ファイルを `.env` という名前に変更します。
+9. `env.example` ファイルを `.env` という名前に変更します。
 
 ## エージェントの設定と対話
 
-6.  「**ターミナルを開く**」を選択し、`adk web` コマンドを実行して、エージェントをローカルで起動します。
+1.  「**ターミナルを開く**」を選択し、`adk web` コマンドを実行して、エージェントをローカルで起動します。
     ```bash
     adk web
     ```
 
-7.  Webプレビュー機能を使って、表示されたURLを開き、`rag-agent` を選択します。
+2.  Webプレビュー機能を使って、表示されたURLを開き、`rag-agent` を選択します。
 
-8.  テキストボックスに、アップロードしたファイルの内容に関する質問を入力してみましょう。例えば、「製品Model-Xのバッテリー駆動時間は？」と入力してEnterキーを押します。
+3.  テキストボックスに、アップロードしたファイルの内容に関する質問を入力してみましょう。例えば、「製品Model-Xのバッテリー駆動時間は？」と入力してEnterキーを押します。
 
 参考までに、アップロードしたファイルには以下の内容が記載されています。
 ```
@@ -214,7 +214,7 @@ adk web
 - 接続性: Bluetooth 5.2, Wi-Fi
 ```
 
-9.  エージェントがGoogle Cloud Storageの製品仕様書を検索し、ファイルの内容に基づいた回答をすることを確認してください。
+4.  エージェントがGoogle Cloud Storageの製品仕様書を検索し、ファイルの内容に基づいた回答をすることを確認してください。
 
 
 ## Congratulations!
