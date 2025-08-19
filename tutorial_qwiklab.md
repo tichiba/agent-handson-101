@@ -66,25 +66,20 @@ pip install google-adk
 
 6.  「**SAVE**」をクリックします。
 
-### Google Cloud Storage データストアの作成
+### Google Drive データストアの作成
 
 1.  左のナビゲーションペインで「**データストア**」を選択します。
 
 2.  「**データストアの作成**」を選択します。
 
-3.  「**Cloud Storage**」カードを見つけて「**SELECT**」をクリックします。
+3.  「**Google ドライブ**」カードを見つけて「**SELECT**」をクリックします。
 
-4.  Cloud Shell で以下のコマンドを実行し、プロジェクトIDと同じ名前のGCSバケットを作成します。
-```bash
-export PROJECT_ID=$(gcloud config list --format 'value(core.project)')
-gsutil mb gs://$PROJECT_ID
-```
+4.  「**すべて**」が選択されたままで、「**続行**」をクリックします。
 
-5.  **バケット名またはフォルダパス** に、先ほど作成したバケット名（`gs://<walkthrough-project-id/>`）を入力し、「**続行**」をクリックします。
+5.  データストアに `Google Drive` という名前を付けます。
 
-6.  データストアに `GCS Data Store` という名前を付けます。
+6.  「**作成**」を選択します。作成したデータストアが一覧に表示されます。
 
-7.  「**作成**」を選択します。作成したデータストアが一覧に表示されます。
 ### Agentspace アプリのデプロイ
 
 1.  左のナビゲーションペインで「**アプリ**」を選択します。
@@ -99,7 +94,7 @@ gsutil mb gs://$PROJECT_ID
 
 6. 「**既存のデータストアを追加**」を選択します。
 
-7.  接続するデータストアとして、先ほど作成した「**GCS Data Store**」データストアのチェックボックスを選択します。
+7.  接続するデータストアとして、先ほど作成した「**Google Drive**」データストアのチェックボックスを選択します。
 
 8.  「**接続**」を選択します。
 
@@ -164,44 +159,44 @@ adk web
 
 <walkthrough-tutorial-duration duration=20></walkthrough-tutorial-duration>
 
-今度は、シナリオ1で作成した Google Cloud Storage のデータストアをRAG (Retrieval Augmented Generation) として利用する `rag-agent` を動かしてみましょう。このエージェントは、Google Cloud Storage 内の**製品仕様書**を検索し、その内容に基づいて質問に回答します。
+今度は、シナリオ1で作成した Google Drive のデータストアをRAG (Retrieval Augmented Generation) として利用する `rag-agent` を動かしてみましょう。このエージェントは、Google Drive 内の**製品仕様書**を検索し、その内容に基づいて質問に回答します。
 
-### GCSへのファイル準備
+### データストアIDの確認と設定
 
-まず、RAGの検索対象となるサンプルファイルをGCSバケットにアップロードします。
+まず、エージェントが接続するデータストアのIDを設定します。
 
 1.  Cloud Shellで、前のシナリオで使用したWebサーバーを `Ctrl+C` で停止します。
 
-2.  Cloud Shellで以下のコマンドを実行し、サンプルファイルをシナリオ1で作成したGCSバケットにアップロードします。
-```bash
-gsutil cp agent-handson-101/rag-agent/files/product_spec_model_x.txt gs://<walkthrough-project-id/>/
+2.  ナビゲーションメニュー <walkthrough-nav-menu-icon></walkthrough-nav-menu-icon> から **[AI Applications]** > **[データストア]** に移動します。
+
+3.  シナリオ1で作成した `Google Drive` データストアをクリックします。
+
+4.  データストアの詳細ページで、**データストアの ID** をコピーします。
+
+5.  Cloud Shellエディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> で `rag-agent/agent.py` ファイルを開き、`your-datastore-id` の値を、先ほどコピーしたご自身のデータストアIDに書き換えます。
+
+6. 次に、`your-gcp-project-id` の値を、ご自身の Google Cloud プロジェクト ID `<walkthrough-project-id/>` に書き換えます。
+
+### Google Driveへのファイル準備とエージェントとの対話
+
+1.  RAGの検索対象となるサンプルファイルをPCにダウンロードします。Cloud Shellの右上の「その他」アイコン（︙）から「ファイルをダウンロード」を選択し、以下のパスをコピーペーストしてダウンロードしてください。
 ```
-<walkthrough-info-message>GCSバケットにファイルがアップロードされると、データストアが自動的にファイルをインデックスに登録します。これには数分かかる場合があります。</walkthrough-info-message>
+agent-handson-101/rag-agent/files/product_spec_model_x.txt
+```
 
-### エージェントの設定と対話
+2.  ダウンロードしたファイルをGoogle Driveにアップロードします。
+[Google Drive](https://drive.google.com/) を別のタブで開き、My Drive直下にアップロードしてください。
 
-次に、エージェントが接続するデータストアのIDを設定し、エージェントと対話します。
-
-1.  ナビゲーションメニュー <walkthrough-nav-menu-icon></walkthrough-nav-menu-icon> から **[AI Applications]** > **[データストア]** に移動します。
-
-2.  シナリオ1で作成した `GCS Data Store` データストアをクリックします。
-
-3.  データストアの詳細ページで、**データストアの ID** をコピーします。
-
-4.  Cloud Shellエディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> で `rag-agent/agent.py` ファイルを開き、`your-datastore-id` の値を、先ほどコピーしたご自身のデータストアIDに書き換えます。
-
-5. 次に、`your-gcp-project-id` の値を、ご自身の Google Cloud プロジェクト ID `<walkthrough-project-id/>` に書き換えます。
-
-6.  `adk web` コマンドを実行して、エージェントをローカルで起動します。
+2.  `adk web` コマンドを実行して、エージェントをローカルで起動します。
     ```bash
     adk web
     ```
 
-7.  Webプレビュー機能を使って、表示されたURLを開き、`rag-agent` を選択します。
+3.  Webプレビュー機能を使って、表示されたURLを開き、`rag-agent` を選択します。
 
-8.  テキストボックスに、アップロードしたファイルの内容に関する質問を入力してみましょう。例えば、「製品Model-Xのバッテリー駆動時間は？」と入力してEnterキーを押します。
+4.  テキストボックスに、アップロードしたファイルの内容に関する質問を入力してみましょう。例えば、「製品Model-Xのバッテリー駆動時間は？」と入力してEnterキーを押します。
 
-9.  エージェントがGoogle Cloud Storageの製品仕様書を検索し、ファイルの内容に基づいた回答をすることを確認してください。
+5.  エージェントがGoogle Driveの製品仕様書を検索し、ファイルの内容に基づいた回答をすることを確認してください。
 
 
 ## Congratulations!
