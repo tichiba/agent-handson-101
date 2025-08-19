@@ -26,12 +26,12 @@ cd ~/agent-handson-101/
 teachme tutorial_qwiklab.md
 ```
 
-<!-- ## Google Cloud プロジェクトの設定
+## Google Cloud プロジェクトの設定
 次に、ターミナルの環境変数にプロジェクトIDを設定します。
 ```bash
 export PROJECT_ID=$(gcloud config list --format 'value(core.project)')
 ```
-<walkthrough-info-message>**Tips:** コードボックスの横にあるボタンをクリックすることで、クリップボードへのコピーおよび Cloud Shell へのコピーが簡単に行えます。</walkthrough-info-message> -->
+<walkthrough-info-message>**Tips:** コードボックスの横にあるボタンをクリックすることで、クリップボードへのコピーおよび Cloud Shell へのコピーが簡単に行えます。
 
 次に、このハンズオンで利用するAPIを有効化します。
 
@@ -60,27 +60,25 @@ pip install google-adk
 
 3.  左のナビゲーションペインから「**設定**」を選択します。
 
-4.  `global` ロケーションの行にある>**鉛筆アイコン（編集ボタン）**をクリックします。
+4.  `global` ロケーションの行にある **鉛筆アイコン（編集ボタン）** をクリックします。
 
 5.  IDプロバイダとして「**Google Identity**」を選択します。
 
 6.  「**SAVE**」をクリックします。
 
-### Google Drive データストアの作成
+## Google Cloud Storage データストアの作成
 
-1.  左のナビゲーションペインで「**データストア**」を選択します。
+4.  Cloud Shell で以下のコマンドを実行し、プロジェクトIDと同じ名前のGCSバケットを作成します。
+```bash
+gcloud storage buckets create gs://$PROJECT_ID
+```
 
-2.  「**データストアの作成**」を選択します。
+2.  Cloud Shellで以下のコマンドを実行し、サンプルファイルをシナリオ1で作成したGCSバケットにアップロードします。
+```bash
+gcloud storage cp files/product_spec_model_x.txt gs://$PROJECT_ID/
+```
 
-3.  「**Google ドライブ**」カードを見つけて「**SELECT**」をクリックします。
-
-4.  「**すべて**」が選択されたままで、「**続行**」をクリックします。
-
-5.  データストアに `Google Drive` という名前を付けます。
-
-6.  「**作成**」を選択します。作成したデータストアが一覧に表示されます。
-
-### Agentspace アプリのデプロイ
+## Agentspace アプリのデプロイ
 
 1.  左のナビゲーションペインで「**アプリ**」を選択します。
 
@@ -92,13 +90,18 @@ pip install google-adk
 
 5. 左のナビゲーションペインで「**接続されたデータストア**」を選択します。
 
-6. 「**既存のデータストアを追加**」を選択します。
+6. 「**+ 新しいデータストア**」を選択します。
 
-7.  接続するデータストアとして、先ほど作成した「**Google Drive**」データストアのチェックボックスを選択します。
+3.  「**Cloud Storage**」カードを見つけて「**SELECT**」をクリックします。
 
-8.  「**接続**」を選択します。
+5.  **バケット名またはフォルダパス** に、先ほど作成したバケット名 `<walkthrough-project-id/>` を入力し、「**続行**」をクリックします。
+
+6.  データストアに `GCS Data Store` という名前を付けます。
+
+7.  「**作成**」を選択します。作成したデータストアが一覧に表示されます。
 
 これでエージェントを開発する準備が整いました。
+
 
 ## **[シナリオ2] ADK を使ったエージェントの実行とカスタマイズ**
 
@@ -106,7 +109,7 @@ pip install google-adk
 
 次に、Agent Development Kit (ADK) を使って、サンプルエージェントをローカルで実行し、プロンプトを書き換えて応答の変化を体験します。
 
-### .env ファイルの作成
+### エージェントのソースコードの確認と設定
 
 1. まず、Cloud Shell エディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> を開きます。
 
@@ -120,9 +123,9 @@ pip install google-adk
 
 5. `env.example` ファイルを `.env` という名前に変更します。
 
-### エージェントのローカル実行と対話
+## エージェントの実行と対話
 
-1. ターミナルを開く を選択して、Cloud Shell を開きます。
+1. 「**ターミナルを開く**」を選択して、Cloud Shell を開きます。
 
 1.  `adk web` コマンドを実行して、エージェントをローカルで起動します。
 ```bash
@@ -136,9 +139,9 @@ adk web
 
 3.  Web UIが開いたら、利用可能なエージェントの一覧から `dawasa-agent` を選択します。
 
-4.  テキストボックスに「日本の首都は？」と入力して、Enterキーを押してみましょう。エージェントから「東京です。」のような応答が返ってくることを確認してください。
+4.  テキストボックスに「日本の首都は？」と入力して、Enterキーを押してみましょう。エージェントから「東京だわさ。」のような応答が返ってくることを確認してください。
 
-### プロンプトのカスタマイズ
+## プロンプトのカスタマイズ
 
 次に応答メッセージをカスタマイズしてみましょう。
 
@@ -155,48 +158,63 @@ adk web
 
 5.  Web UIをブラウザでリロードし、もう一度「日本の首都は？」と入力します。エージェントの応答が「東京でござる。」のように変化したことを確認してください。
 
+
 ## **[シナリオ3] 製品・サービス仕様QAエージェントの作成**
 
 <walkthrough-tutorial-duration duration=20></walkthrough-tutorial-duration>
 
-今度は、シナリオ1で作成した Google Drive のデータストアをRAG (Retrieval Augmented Generation) として利用する `rag-agent` を動かしてみましょう。このエージェントは、Google Drive 内の**製品仕様書**を検索し、その内容に基づいて質問に回答します。
+今度は、シナリオ1で作成した Google Cloud Storage のデータストアをRAG (Retrieval Augmented Generation) として利用する `rag-agent` を動かしてみましょう。このエージェントは、Google Cloud Storage 内の**製品仕様書**を検索し、その内容に基づいて質問に回答します。
 
-### データストアIDの確認と設定
-
-まず、エージェントが接続するデータストアのIDを設定します。
+### エージェントのソースコードの確認と設定
 
 1.  Cloud Shellで、前のシナリオで使用したWebサーバーを `Ctrl+C` で停止します。
 
-2.  ナビゲーションメニュー <walkthrough-nav-menu-icon></walkthrough-nav-menu-icon> から **[AI Applications]** > **[データストア]** に移動します。
+1.  ナビゲーションメニュー <walkthrough-nav-menu-icon></walkthrough-nav-menu-icon> から **[AI Applications]** > **[データストア]** に移動します。
 
-3.  シナリオ1で作成した `Google Drive` データストアをクリックします。
+2.  シナリオ1で作成した `GCS Data Store` データストアをクリックします。
 
-4.  データストアの詳細ページで、**データストアの ID** をコピーします。
+3.  データストアの詳細ページで、**データストアの ID** をコピーします。
 
-5.  Cloud Shellエディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> で `rag-agent/agent.py` ファイルを開き、`your-datastore-id` の値を、先ほどコピーしたご自身のデータストアIDに書き換えます。
+1. Cloud Shell エディタ <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> を開きます。
 
-6. 次に、`your-gcp-project-id` の値を、ご自身の Google Cloud プロジェクト ID `<walkthrough-project-id/>` に書き換えます。
+1.  ディレクトリ `rag-agent` に移動して、`agent.py` ファイルを開きます。
+このファイルには、先程のエージェントと同じくインストラクションが記載されているのに加えて、RAGデータソースを指定するようになっています。
 
-### Google Driveへのファイル準備とエージェントとの対話
+2.  `your-datastore-id` の値を、先ほどコピーしたご自身のデータストアIDに書き換えます。
 
-1.  RAGの検索対象となるサンプルファイルをPCにダウンロードします。Cloud Shellの右上の「その他」アイコン（︙）から「ファイルをダウンロード」を選択し、以下のパスをコピーペーストしてダウンロードしてください。
-```
-agent-handson-101/rag-agent/files/product_spec_model_x.txt
-```
+5. 次に、`your-gcp-project-id` の値を、ご自身の Google Cloud プロジェクト ID `<walkthrough-project-id/>` に書き換えます。
 
-2.  ダウンロードしたファイルをGoogle Driveにアップロードします。
-[Google Drive](https://drive.google.com/) を別のタブで開き、My Drive直下にアップロードしてください。
+3. 次に、`env.example` ファイルを開きます。このファイルには、エージェントが使用する API キーなどの設定を記述します。
 
-2.  `adk web` コマンドを実行して、エージェントをローカルで起動します。
+4. `GOOGLE_CLOUD_PROJECT` に Google Cloud プロジェクト ID `<walkthrough-project-id/>` を設定してください。
+
+5. `env.example` ファイルを `.env` という名前に変更します。
+
+## エージェントの設定と対話
+
+6.  「**ターミナルを開く**」を選択し、`adk web` コマンドを実行して、エージェントをローカルで起動します。
     ```bash
     adk web
     ```
 
-3.  Webプレビュー機能を使って、表示されたURLを開き、`rag-agent` を選択します。
+7.  Webプレビュー機能を使って、表示されたURLを開き、`rag-agent` を選択します。
 
-4.  テキストボックスに、アップロードしたファイルの内容に関する質問を入力してみましょう。例えば、「製品Model-Xのバッテリー駆動時間は？」と入力してEnterキーを押します。
+8.  テキストボックスに、アップロードしたファイルの内容に関する質問を入力してみましょう。例えば、「製品Model-Xのバッテリー駆動時間は？」と入力してEnterキーを押します。
 
-5.  エージェントがGoogle Driveの製品仕様書を検索し、ファイルの内容に基づいた回答をすることを確認してください。
+参考までに、アップロードしたファイルには以下の内容が記載されています。
+```
+# product_spec_model_x.txt
+製品名: Model-X スマートウォッチ
+
+== 主な仕様 ==
+- ディスプレイ: 1.4インチ 有機ELディスプレイ
+- バッテリー駆動時間: 通常使用で最大48時間
+- 防水性能: 5気圧防水
+- 搭載センサー: 心拍数センサー, 加速度センサー, GPS
+- 接続性: Bluetooth 5.2, Wi-Fi
+```
+
+9.  エージェントがGoogle Cloud Storageの製品仕様書を検索し、ファイルの内容に基づいた回答をすることを確認してください。
 
 
 ## Congratulations!
@@ -204,4 +222,4 @@ agent-handson-101/rag-agent/files/product_spec_model_x.txt
 
 おめでとうございます！ハンズオンはこれで完了です。ご参加ありがとうございました。
 
-ADK を使って、AI エージェントの開発、デプロイ、実行までの一連の流れを体験することができました。
+Agentspace と ADK を使って、AI エージェントの開発、デプロイ、実行までの一連の流れを体験することができました。
